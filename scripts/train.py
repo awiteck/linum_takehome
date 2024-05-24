@@ -67,6 +67,7 @@ if __name__ == "__main__":
         ]
     )
 
+    print(f"making dataset...")
     # Set up dataset and dataloader
     dataset = CorruptedImagesDataset(args.data_dir, transform=transform)
 
@@ -89,6 +90,7 @@ if __name__ == "__main__":
         num_workers=4,
         pin_memory=True,
     )
+    print(f"dataloaders made...")
 
     # -------------------------------------------------------------------------------
     # Load the PyTorch Model
@@ -97,6 +99,8 @@ if __name__ == "__main__":
     model.to(device)
 
     model.train()
+
+    print(f"model made...")
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
@@ -113,6 +117,7 @@ if __name__ == "__main__":
 
     # Training loop
     for epoch in range(args.epochs):
+        print(f"epoch: {epoch}")
         model.train()
         total_train_loss = 0
         train_lx_losses = []
