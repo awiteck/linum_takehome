@@ -13,9 +13,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
 from torchvision import transforms
 from model.image_restoration_model import create_model
-from data.loss_utils import custom_loss
+from data.loss_utils import lx, lm
 from dataset import CorruptedImagesDataset
 import os
+import json
 
 
 if __name__ == "__main__":
@@ -92,23 +93,41 @@ if __name__ == "__main__":
 
     best_val_loss = float("inf")
 
+    loss_history = {
+        "train_total": [],
+        "train_lx": [],
+        "train_lm": [],
+        "val_total": [],
+        "val_lx": [],
+        "val_lm": [],
+    }
+
     # Training loop
     for epoch in range(args.epochs):
+        model.train()
         total_train_loss = 0
+        train_lx_losses = []
+        train_lm_losses = []
         for corrupted_imgs, binary_masks, src_imgs in tqdm.tqdm(train_dataloader):
             # Move data to the correct device
             corrupted_imgs = corrupted_imgs.to(device)
-            binary_masks = binary_masks.to(device)
-            binary_masks = binary_masks.unsqueeze(1)
+            binary_masks = binary_masks.to(device).unsqueeze(1)
             src_imgs = src_imgs.to(device)
 
             optimizer.zero_grad()
             predicted_imgs, predicted_masks = model(corrupted_imgs)
 
-            loss = custom_loss(src_imgs, predicted_imgs, binary_masks, predicted_masks)
+            lx_loss = lx(src_imgs, predicted_imgs, binary_masks)
+            lm_loss = lm(predicted_masks, binary_masks)
+            loss = 2 * lx_loss + lm_loss
             loss.backward()
             optimizer.step()
+
             total_train_loss += loss.item()
+
+            loss_history["train_total"].append(loss.item())
+            loss_history["train_lx"].append(lx_loss.item())
+            loss_history["train_lm"].append(lm_loss.item())
 
         avg_train_loss = total_train_loss / len(train_dataloader)
         print(f"Epoch {epoch+1}/{args.epochs}, Training Loss: {avg_train_loss}")
@@ -123,10 +142,15 @@ if __name__ == "__main__":
                 src_imgs = src_imgs.to(device)
 
                 predicted_imgs, predicted_masks = model(corrupted_imgs)
-                val_loss = custom_loss(
-                    src_imgs, predicted_imgs, binary_masks, predicted_masks
-                )
+
+                lx_loss = lx(src_imgs, predicted_imgs, binary_masks)
+                lm_loss = lm(predicted_masks, binary_masks)
+                val_loss = 2 * lx_loss + lm_loss
                 total_val_loss += val_loss.item()
+
+                loss_history["val_total"].append(loss.item())
+                loss_history["val_lx"].append(lx_loss.item())
+                loss_history["val_lm"].append(lm_loss.item())
 
         avg_val_loss = total_val_loss / len(val_dataloader)
         print(f"Epoch {epoch+1}/{args.epochs}, Validation Loss: {avg_val_loss}")
@@ -136,6 +160,13 @@ if __name__ == "__main__":
             best_model_path = os.path.join(args.output_dir, "best_model.pth")
             torch.save(model.state_dict(), best_model_path)
             print(f"Saved new best model to {best_model_path}")
+
+    # At the end of the training loop
+    json_path = os.path.join(args.output_dir, "loss_history.json")
+    with open(json_path, "w") as f:
+        json.dump(loss_history, f)
+
+    print(f"Loss history saved to {json_path}")
 
     """
     # -------------------------------------------------------------------------------

@@ -19,10 +19,6 @@ def lx(x: torch.Tensor, x_pred: torch.Tensor, m: torch.Tensor):
 def lm(m_pred: torch.Tensor, m_target: torch.Tensor):
     m_pred = m_pred.float()
     m_target = m_target.float()
-    # print(f"m_pred.size(): {m_pred.size()}")
-    # print(f"m_target.size(): {m_target.size()}")
-    # print(m_pred)
-    # print(m_target)
     return F.binary_cross_entropy(m_pred, m_target)
 
 
