@@ -59,7 +59,6 @@ if __name__ == "__main__":
         print(
             f"Device memory: {torch.cuda.get_device_properties(device.index).total_memory / 1024 ** 3} GB"
         )
-    device = torch.device(device)
 
     # Transform for converting numpy arrays to tensors
     transform = transforms.Compose(
@@ -77,9 +76,19 @@ if __name__ == "__main__":
 
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_dataloader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True
+        train_dataset,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=True,
     )
-    val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+    val_dataloader = DataLoader(
+        val_dataset,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+    )
 
     # -------------------------------------------------------------------------------
     # Load the PyTorch Model
