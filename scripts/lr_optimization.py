@@ -60,7 +60,7 @@ if __name__ == "__main__":
             transforms.ToTensor(),
         ]
     )
-
+    print(f"Making dataset...")
     # Set up dataset and dataloader
     dataset = CorruptedImagesDataset(args.data_dir, transform=transform)
 
@@ -72,6 +72,8 @@ if __name__ == "__main__":
 
     train_dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
+    print(f"train_dataloader created...")
+
     # -------------------------------------------------------------------------------
     # Load the PyTorch Model
     # -------------------------------------------------------------------------------
@@ -80,6 +82,8 @@ if __name__ == "__main__":
     model.train()
     optimizer = optim.Adam(model.parameters(), lr=1e-7)
 
+    print("model initialized...")
+
     lr_find_epochs = args.lr_find_epochs
     lr_increase = (1e-1 / 1e-7) ** (1 / (len(train_dataloader) * lr_find_epochs))
 
@@ -87,6 +91,7 @@ if __name__ == "__main__":
 
     # Training loop
     for epoch in range(lr_find_epochs):
+        print(f"epoch: {epoch}")
         for corrupted_imgs, binary_masks, src_imgs in tqdm.tqdm(train_dataloader):
             # Move data to the correct device
             corrupted_imgs = corrupted_imgs.to(device)
@@ -106,6 +111,9 @@ if __name__ == "__main__":
             lr = optimizer.param_groups[0]["lr"]
             lr_history["lrs"].append(lr)
             lr_history["losses"].append(loss.item())
+
+            print(f"lr: {lr}")
+            print(f"loss: {loss.item()}")
 
             # Update the learning rate
             optimizer.param_groups[0]["lr"] *= lr_increase
