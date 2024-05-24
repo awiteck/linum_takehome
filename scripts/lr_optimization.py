@@ -23,10 +23,16 @@ if __name__ == "__main__":
         help="Directory with training data",
     )
     parser.add_argument(
-        "--epochs", type=int, default=3, help="Number of training epochs"
+        "--lr_find_epochs", type=int, default=5, help="Number of epochs"
     )
     parser.add_argument(
         "--batch_size", type=int, default=4, help="Batch size for training"
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="./output",
+        help="Directory to save model weights",
     )
 
     parser.add_argument(
@@ -74,7 +80,7 @@ if __name__ == "__main__":
     model.train()
     optimizer = optim.Adam(model.parameters(), lr=1e-7)
 
-    lr_find_epochs = 10
+    lr_find_epochs = args.lr_find_epochs
     lr_increase = (1e-1 / 1e-7) ** (1 / (len(train_dataloader) * lr_find_epochs))
 
     lr_history = {"lrs": [], "losses": []}
