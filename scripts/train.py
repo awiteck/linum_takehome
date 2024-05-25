@@ -162,7 +162,7 @@ if __name__ == "__main__":
                 val_loss = 2 * lx_loss + lm_loss
                 total_val_loss += val_loss.item()
 
-                loss_history["val_total"].append(loss.item())
+                loss_history["val_total"].append(val_loss.item())
                 loss_history["val_lx"].append(lx_loss.item())
                 loss_history["val_lm"].append(lm_loss.item())
 
