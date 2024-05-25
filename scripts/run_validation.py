@@ -20,6 +20,7 @@ from data.img_utils import (
     read_rgba_img,
 )
 from model.image_restoration_model import ImageRestorationModel
+from model.image_restoration_model import create_model
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -55,9 +56,13 @@ if __name__ == "__main__":
 
     # NOTE: If you have parameters needed to initialize your `ImageRestorationModel`
     # please place them in the kwargs, so that the model can be properly initialized.
-    kwargs = {}
 
-    image_restoration_model = ImageRestorationModel(**kwargs)
+    # kwargs = {}
+
+    # image_restoration_model = ImageRestorationModel(**kwargs)
+
+    image_restoration_model = create_model()
+
     image_restoration_model.load_state_dict(model_checkpoint_state_dict)
     image_restoration_model.eval()
     image_restoration_model.to("cuda")
