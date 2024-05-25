@@ -60,7 +60,6 @@ if __name__ == "__main__":
             f"Device memory: {torch.cuda.get_device_properties(device.index).total_memory / 1024 ** 3} GB"
         )
 
-    # Transform for converting numpy arrays to tensors
     transform = transforms.Compose(
         [
             transforms.ToTensor(),
@@ -68,7 +67,7 @@ if __name__ == "__main__":
     )
 
     print(f"making dataset...")
-    # Set up dataset and dataloader
+
     dataset = CorruptedImagesDataset(args.data_dir, transform=transform)
 
     total_samples = len(dataset)
@@ -123,7 +122,6 @@ if __name__ == "__main__":
         train_lx_losses = []
         train_lm_losses = []
         for corrupted_imgs, binary_masks, src_imgs in tqdm.tqdm(train_dataloader):
-            # Move data to the correct device
             corrupted_imgs = corrupted_imgs.to(device)
             binary_masks = binary_masks.to(device).unsqueeze(1)
             src_imgs = src_imgs.to(device)

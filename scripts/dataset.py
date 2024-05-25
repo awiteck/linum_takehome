@@ -28,9 +28,6 @@ class CorruptedImagesDataset(Dataset):
         return len(self.src_image_files)
 
     def __getitem__(self, idx):
-        # print(self.corrupted_image_files[idx])
-        # print(self.mask_files[idx])
-        # print(self.src_image_files[idx])
 
         corrupted_img = read_rgba_img(img_path=self.corrupted_image_files[idx])
         norm_corrupted_img = torch.from_numpy(normalize_rgb_img(img=corrupted_img))

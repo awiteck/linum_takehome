@@ -53,20 +53,17 @@ if __name__ == "__main__":
             f"Device memory: {torch.cuda.get_device_properties(device.index).total_memory / 1024 ** 3} GB"
         )
 
-    # Transform for converting numpy arrays to tensors
     transform = transforms.Compose(
         [
             transforms.ToTensor(),
         ]
     )
     print(f"Making dataset...")
-    # Set up dataset and dataloader
     dataset = CorruptedImagesDataset(args.data_dir, transform=transform)
 
-    # Assuming train_dataset is your original large training dataset
     subset_indices = np.random.choice(
         len(dataset), size=int(len(dataset) * 0.1), replace=False
-    )  # 10% of the dataset
+    )
     train_subset = Subset(dataset, subset_indices)
 
     train_dataloader = DataLoader(
@@ -79,9 +76,6 @@ if __name__ == "__main__":
 
     print(f"train_dataloader created...")
 
-    # -------------------------------------------------------------------------------
-    # Load the PyTorch Model
-    # -------------------------------------------------------------------------------
     model = create_model()
     model.to(device)
     model.train()
@@ -96,9 +90,7 @@ if __name__ == "__main__":
 
     # Training loop
     for epoch in range(lr_find_epochs):
-        # print(f"epoch: {epoch}")
         for corrupted_imgs, binary_masks, src_imgs in tqdm.tqdm(train_dataloader):
-            # Move data to the correct device
             corrupted_imgs = corrupted_imgs.to(device)
             binary_masks = binary_masks.to(device).unsqueeze(1)
             src_imgs = src_imgs.to(device)
@@ -112,18 +104,12 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            # Record the learning rate and loss
             lr = optimizer.param_groups[0]["lr"]
             lr_history["lrs"].append(lr)
             lr_history["losses"].append(loss.item())
 
-            # print(f"lr: {lr}")
-            # print(f"loss: {loss.item()}")
-
-            # Update the learning rate
             optimizer.param_groups[0]["lr"] *= lr_increase
 
-    # At the end of the training loop
     json_path = os.path.join(args.output_dir, "lr_history.json")
     with open(json_path, "w") as f:
         json.dump(lr_history, f)
